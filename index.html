@@ -1,0 +1,2871 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元气馒馒 - 早餐选购小程序</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/v4-shims.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B7355',      // 主色调：温暖的棕褐色，呼应简约线条画
+                        secondary: '#A68B5B',    // 辅助色：浅棕色，与主色调和谐
+                        accent: '#C4A484',       // 强调色：淡棕色，增加层次感
+                        warm: '#D2B48C',         // 暖色调：浅棕黄色，营造温馨氛围
+                        success: '#8FBC8F',      // 成功色：淡绿色，与整体配色协调
+                        danger: '#CD5C5C',       // 危险色：淡红色，柔和不刺眼
+                        warning: '#F0E68C',      // 警告色：淡黄色，与整体风格一致
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-gentle': 'bounceGentle 0.6s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 8px 32px rgba(244, 162, 97, 0.15);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .bg-pattern {
+                /* 使用用户上传的简约线条画背景图片 */
+                background: 
+                    url('https://aka.doubaocdn.com/s/Qiiq1wCwcB?alice_filename=') center/cover fixed,
+                    linear-gradient(135deg, #F8F4E6 0%, #E8DCC0 25%, #D4C5A9 50%, #C8B89A 75%, #B8A88A 100%);
+                background-blend-mode: overlay;
+                background-size: cover, 400% 400%;
+                animation: gradientShift 15s ease infinite;
+                background-attachment: fixed;
+            }
+            .glass-card {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            .rainbow-text {
+                background: linear-gradient(45deg, #8B7355, #A68B5B, #C4A484, #D2B48C, #8FBC8F);
+                background-size: 400% 400%;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: gradientShift 3s ease infinite;
+            }
+        }
+        
+        @keyframes bounceGentle {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(1deg); }
+            75% { transform: rotate(-1deg); }
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #8B7355, #A68B5B);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #A68B5B, #8B7355);
+        }
+        
+        /* 点单页面样式 */
+        .order-category-btn.active {
+            background-color: #8B7355;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen relative overflow-x-hidden">
+    <!-- 顶部导航 -->
+    <header class="glass-card fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3 animate-float">
+                    <i class="fa fa-bread-slice text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold rainbow-text text-shadow animate-wiggle">元气馒馒</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- 管理员功能按钮 -->
+                <div id="admin-btns" class="hidden">
+                    <button class="p-2 text-primary hover:text-primary/80 transition-colors" onclick="showAdminPanel()">
+                        <i class="fa fa-tachometer text-xl"></i>
+                    </button>
+                    <button class="p-2 text-primary hover:text-primary/80 transition-colors" onclick="switchAccount()">
+                        <i class="fa fa-exchange text-xl"></i>
+                    </button>
+                    <button class="p-2 text-primary hover:text-primary/80 transition-colors" onclick="logoutAdmin()">
+                        <i class="fa fa-sign-out text-xl"></i>
+                    </button>
+                </div>
+                <!-- 普通用户/登录按钮 -->
+                <button id="login-admin-btn" class="p-2 text-primary hover:text-primary/80 transition-colors" onclick="showAdminLogin()">
+                    <i class="fa fa-lock text-xl"></i>
+                </button>
+                
+                <button class="relative p-2 text-primary hover:text-primary/80 transition-colors" onclick="toggleCart()">
+                    <i class="fa fa-shopping-cart text-xl"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="pt-16 pb-20 px-4 space-y-6">
+        <!-- 欢迎横幅 -->
+        <div class="glass-card rounded-2xl p-6 animate-slide-up">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">早安！</h2>
+                    <p class="text-gray-600">美好的一天从健康美味开始</p>
+                </div>
+                <div class="w-16 h-16 bg-accent rounded-full flex items-center justify-center animate-float">
+                    <i class="fa fa-mug-hot text-primary text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 明日限定预告 -->
+        <div class="glass-card rounded-2xl p-6 animate-slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">明日限定预告</h2>
+                <span class="text-sm text-gray-500" id="tomorrow-date">2026年3月17日</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 限定商品1 -->
+                <div class="bg-gradient-to-r from-pink-100 to-pink-50 rounded-xl p-4 animate-float">
+                    <div class="flex items-center space-x-4">
+                        <img src="https://aka.doubaocdn.com/s/uV571wC9AQ" alt="草莓芝士包" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 mb-1">草莓芝士包</h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">新鲜草莓搭配浓郁芝士，酸甜可口</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-primary">¥6.80</span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-pink-200 text-pink-700">限量50个</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 限定商品2 -->
+                <div class="bg-gradient-to-r from-blue-100 to-blue-50 rounded-xl p-4 animate-float" style="animation-delay: 0.2s">
+                    <div class="flex items-center space-x-4">
+                        <img src="https://aka.doubaocdn.com/s/TGP31wC9AQ" alt="抹茶红豆包" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 mb-1">抹茶红豆包</h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">日式抹茶配自制红豆沙，清香甘甜</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-primary">¥6.20</span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-blue-200 text-blue-700">限量30个</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 限定商品3 -->
+                <div class="bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-xl p-4 animate-float" style="animation-delay: 0.4s">
+                    <div class="flex items-center space-x-4">
+                        <img src="https://aka.doubaocdn.com/s/C0jE1wC9AR" alt="南瓜小米粥" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 mb-1">南瓜小米粥</h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">香甜南瓜配养胃小米，营养丰富</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-primary">¥8.50</span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-yellow-200 text-yellow-700">限量20份</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 限定商品4 -->
+                <div class="bg-gradient-to-r from-green-100 to-green-50 rounded-xl p-4 animate-float" style="animation-delay: 0.6s">
+                    <div class="flex items-center space-x-4">
+                        <img src="https://aka.doubaocdn.com/s/uV571wC9AQ" alt="紫薯奶黄包" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 mb-1">紫薯奶黄包</h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">天然紫薯配香浓奶黄，口感丰富</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-primary">¥5.80</span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-green-200 text-green-700">限量40个</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600 mb-2">明日限定商品将于明天早上6:00准时上架</p>
+                <button onclick="switchTab('order')" class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    查看更多商品
+                </button>
+            </div>
+        </div>
+
+        <!-- 签到区域 -->
+        <div class="glass-card rounded-2xl p-6 animate-slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">每日签到</h2>
+                <span class="text-sm text-gray-500" id="signin-date">2026年3月16日</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-accent rounded-full flex items-center justify-center animate-float">
+                    <i class="fa fa-check-circle text-primary text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-medium text-gray-800">签到获得积分</h3>
+                    <p class="text-sm text-gray-600">连续签到可获得更多积分奖励</p>
+                </div>
+                <button id="signin-btn" class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors" onclick="signIn()">
+                    立即签到
+                </button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">连续签到：<span id="consecutive-days" class="text-primary font-medium">0</span>天</span>
+                    <span class="text-sm text-gray-600">今日可获得：<span class="text-primary font-medium" id="today-points">10</span>积分</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 点单页面 -->
+    <div id="order-page" class="fixed inset-0 z-40 bg-pattern hidden">
+        <!-- 桌面端布局 -->
+        <div class="pt-16 pb-20 h-full flex overflow-hidden hidden md:flex">
+            <!-- 左侧分类导航 -->
+            <div class="w-48 bg-white/90 backdrop-blur-sm border-r border-gray-200 overflow-y-auto">
+                <div class="p-4 border-b">
+                    <h3 class="text-sm font-medium text-gray-800">商品分类</h3>
+                </div>
+                <div class="space-y-1">
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn active" data-category="all">
+                        全部
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="mantou">
+                        元气包包
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="creative">
+                        创艺手作
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="shaomai">
+                        烧卖
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="tuanzi">
+                        团子
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="big-wonton">
+                        大馄饨
+                    </button>
+                    <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors order-category-btn" data-category="small-wonton">
+                        小馄饨
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 右侧商品列表 -->
+            <div class="flex-1 overflow-y-auto p-4">
+                <div class="grid grid-cols-1 gap-4" id="order-product-list-desktop">
+                    <!-- 商品卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端布局 -->
+        <div class="pt-16 pb-20 h-full flex flex-col md:hidden">
+            <!-- 顶部标签栏 -->
+            <div class="bg-white/90 backdrop-blur-sm border-b border-gray-200 overflow-x-auto">
+                <div class="flex space-x-1 p-2">
+                    <button class="px-3 py-2 text-sm rounded-lg bg-primary text-white order-category-btn-mobile active" data-category="all">
+                        全部
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="mantou">
+                        元气包包
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="creative">
+                        创艺手作
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="shaomai">
+                        烧卖
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="tuanzi">
+                        团子
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="big-wonton">
+                        大馄饨
+                    </button>
+                    <button class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors order-category-btn-mobile" data-category="small-wonton">
+                        小馄饨
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 商品列表 -->
+            <div class="flex-1 overflow-y-auto p-2">
+                <div class="grid grid-cols-2 gap-2" id="order-product-list-mobile">
+                    <!-- 商品卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的页面 -->
+    <div id="profile-page" class="fixed inset-0 z-40 bg-pattern hidden">
+        <div class="pt-16 pb-20 px-4 space-y-6 overflow-y-auto h-full">
+            <!-- 用户信息 -->
+            <div class="glass-card rounded-2xl p-6 text-center animate-slide-up">
+                <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
+                    <i class="fa fa-user-circle text-white text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-1">早餐达人</h2>
+                <p class="text-sm text-gray-600 mb-3">黄金会员</p>
+                <div class="bg-accent rounded-lg p-3 mb-4">
+                    <div class="text-2xl font-bold text-primary" id="user-points">1,256</div>
+                    <div class="text-sm text-gray-600">当前积分</div>
+                </div>
+            </div>
+
+            <!-- 快捷功能 -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <button class="glass-card rounded-xl p-4 text-center hover:shadow-lg transition-shadow" onclick="showPointsDetail()">
+                    <i class="fa fa-coins text-primary text-xl mb-2"></i>
+                    <div class="text-xs text-gray-600">积分明细</div>
+                </button>
+                <button class="glass-card rounded-xl p-4 text-center hover:shadow-lg transition-shadow" onclick="showCoupons()">
+                    <i class="fa fa-gift text-primary text-xl mb-2"></i>
+                    <div class="text-xs text-gray-600">优惠券</div>
+                </button>
+                <button class="glass-card rounded-xl p-4 text-center hover:shadow-lg transition-shadow" onclick="showAddress()">
+                    <i class="fa fa-home text-primary text-xl mb-2"></i>
+                    <div class="text-xs text-gray-600">收货地址</div>
+                </button>
+                <button class="glass-card rounded-xl p-4 text-center hover:shadow-lg transition-shadow" onclick="showOrderPickup()">
+                    <i class="fa fa-box text-primary text-xl mb-2"></i>
+                    <div class="text-xs text-gray-600">预定提取</div>
+                </button>
+            </div>
+
+            <!-- 积分兑换 -->
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">积分兑换优惠券</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer" onclick="exchangePoints(100, '满50元减3元券', 50, 3)">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fa fa-percent text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-800">满50元减3元券</div>
+                                    <div class="text-xs text-gray-500">有效期一个月</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-primary">100积分</div>
+                                <div class="text-xs text-gray-500">满50元可用</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer" onclick="exchangePoints(300, '满100元减10元券', 100, 10)">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
+                                    <i class="fa fa-gift text-secondary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-800">满100元减10元券</div>
+                                    <div class="text-xs text-gray-500">有效期一个月</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-secondary">300积分</div>
+                                <div class="text-xs text-gray-500">满100元可用</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer" onclick="exchangePoints(800, '满200元减50元券', 200, 50)">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
+                                    <i class="fa fa-star text-success text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-800">满200元减50元券</div>
+                                    <div class="text-xs text-gray-500">有效期一个月</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-success">800积分</div>
+                                <div class="text-xs text-gray-500">满200元可用</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    <i class="fa fa-info-circle mr-1"></i>
+                    满200元20公里内免费送货上门
+                </div>
+            </div>
+
+            <!-- 订单历史 -->
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">购买历史</h3>
+                    <button class="text-primary text-sm hover:text-primary/80 transition-colors" onclick="showAllOrders()">
+                        查看全部
+                    </button>
+                </div>
+                <div id="order-history">
+                    <!-- 订单历史将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购物车侧边栏 -->
+    <div id="cart-sidebar" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="toggleCart()"></div>
+        <div class="absolute right-0 top-0 h-full w-80 glass-card animate-slide-up">
+            <div class="p-4 border-b flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-800">购物车</h3>
+                <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 flex-1 overflow-y-auto">
+                <div id="cart-items" class="space-y-4">
+                    <!-- 购物车商品将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            <div class="p-4 border-t">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-bold">总计：</span>
+                    <span class="text-xl font-bold text-primary" id="cart-total">¥0.00</span>
+                </div>
+                <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors" id="checkout-btn" disabled="" onclick="checkout()">
+                    去结算
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单详情弹窗 -->
+    <div id="order-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeOrderDetail()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">订单详情</h3>
+                <button onclick="closeOrderDetail()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="order-detail-content" class="pt-4">
+                <!-- 订单详情内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 积分明细弹窗 -->
+    <div id="points-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closePointsDetail()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">积分明细</h3>
+                <button onclick="closePointsDetail()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="points-detail-content" class="pt-4">
+                <!-- 积分明细内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 优惠券弹窗 -->
+    <div id="coupons-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeCoupons()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">我的优惠券</h3>
+                <button onclick="closeCoupons()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 pt-4">
+                <div class="border-b pb-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-medium text-gray-800">可用优惠券</h4>
+                        <span class="text-sm text-primary font-medium" id="available-coupons-count">0</span>
+                    </div>
+                    <div id="available-coupons">
+                        <!-- 可用优惠券将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-medium text-gray-800">已过期优惠券</h4>
+                        <span class="text-sm text-gray-500 font-medium" id="expired-coupons-count">0</span>
+                    </div>
+                    <div id="expired-coupons">
+                        <!-- 已过期优惠券将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 收货地址弹窗 -->
+    <div id="address-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeAddress()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">收货地址</h3>
+                <button onclick="closeAddress()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 pt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择区域</label>
+                    <select id="area-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        <option value="">请选择区域</option>
+                        <option value="天宁区">天宁区</option>
+                        <option value="钟楼区">钟楼区</option>
+                        <option value="新北区">新北区</option>
+                        <option value="武进区">武进区</option>
+                        <option value="经开区">经开区</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择街道</label>
+                    <select id="street-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        <option value="">请先选择区域</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
+                    <input type="text" id="detail-address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入详细地址（如：小区名称、门牌号等）">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+                    <input type="text" id="contact-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入联系人姓名">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                    <input type="tel" id="contact-phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入联系电话">
+                </div>
+                <div class="pt-4 border-t">
+                    <button onclick="saveAddress()" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        保存地址
+                    </button>
+                </div>
+                <div class="text-sm text-gray-600 text-center">
+                    <i class="fa fa-info-circle mr-1"></i>
+                    满200元20公里内免费送货上门
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预定单提取弹窗 -->
+    <div id="order-pickup-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeOrderPickup()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">预定单提取</h3>
+                <button onclick="closeOrderPickup()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 pt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">订单号</label>
+                    <input type="text" id="order-number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入订单号">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">取件码</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="pickup-code" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="系统自动生成" readonly="">
+                        <button onclick="generatePickupCode()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">提取时间</label>
+                    <input type="datetime-local" id="pickup-time" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                    <textarea id="pickup-remark" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" rows="3" placeholder="请输入备注信息"></textarea>
+                </div>
+                <div class="pt-4 border-t">
+                    <button onclick="saveOrderPickup()" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        确认提取
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品详情弹窗 -->
+    <div id="product-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeProductDetail()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800" id="product-detail-title">商品详情</h3>
+                <button onclick="closeProductDetail()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="product-detail-content" class="pt-4">
+                <!-- 商品详情内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理员登录弹窗 -->
+    <div id="admin-login-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50" onclick="closeAdminLogin()">
+        <div class="glass-card rounded-xl p-6 max-w-md w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white/90 backdrop-blur-sm py-2 -mt-6 -mx-6 px-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">管理员登录</h3>
+                <button onclick="closeAdminLogin()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 pt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">管理员账号</label>
+                    <input type="text" id="admin-account" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入账号">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">管理员密码</label>
+                    <input type="password" id="admin-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="请输入密码">
+                </div>
+                <div class="text-red-500 text-sm hidden" id="login-error">账号或密码错误</div>
+                <button onclick="loginAdmin()" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    登录
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理员面板 -->
+    <div id="admin-panel" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeAdminPanel()"></div>
+        <div class="absolute right-0 top-0 h-full w-[90%] md:w-[70%] lg:w-[50%] glass-card animate-slide-up overflow-y-auto">
+            <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-sm">
+                <h3 class="text-lg font-bold text-gray-800">管理员面板</h3>
+                <button onclick="closeAdminPanel()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- 收益统计 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-primary/10 rounded-xl p-4 text-center">
+                        <div class="text-sm text-gray-600 mb-1">今日收益</div>
+                        <div class="text-2xl font-bold text-primary" id="daily-income">¥0.00</div>
+                    </div>
+                    <div class="bg-secondary/10 rounded-xl p-4 text-center">
+                        <div class="text-sm text-gray-600 mb-1">本月收益</div>
+                        <div class="text-2xl font-bold text-secondary" id="monthly-income">¥0.00</div>
+                    </div>
+                    <div class="bg-accent/10 rounded-xl p-4 text-center">
+                        <div class="text-sm text-gray-600 mb-1">总收益</div>
+                        <div class="text-2xl font-bold text-accent/80" id="total-income">¥0.00</div>
+                    </div>
+                </div>
+
+                <!-- 用户购买总额统计 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">用户购买总额统计</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 text-sm text-gray-600">用户名</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">总购买金额</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">订单数量</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">最后购买时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-purchase-stats">
+                                <!-- 用户购买统计将动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 所有订单信息 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">所有订单信息</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 text-sm text-gray-600">订单号</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">用户</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">金额</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">状态</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">取件码</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-orders-list">
+                                <!-- 所有订单将动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 预定单取件码管理 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">预定单取件码管理</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 text-sm text-gray-600">订单号</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">取件码</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">提取时间</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">状态</th>
+                                    <th class="text-left py-2 text-sm text-gray-600">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pickup-codes-list">
+                                <!-- 取件码列表将动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-primary/20 z-40">
+        <div class="flex justify-around items-center h-16">
+            <button class="flex flex-col items-center justify-center space-y-1 text-primary nav-btn" onclick="switchTab('home')">
+                <i class="fa fa-coffee text-xl"></i>
+                <span class="text-xs font-medium">首页</span>
+            </button>
+            <button class="flex flex-col items-center justify-center space-y-1 text-gray-600 nav-btn" onclick="switchTab('order')">
+                <i class="fa fa-utensils text-xl"></i>
+                <span class="text-xs font-medium">点单</span>
+            </button>
+            <button class="flex flex-col items-center justify-center space-y-1 text-gray-600 nav-btn" onclick="showAllOrders()">
+                <i class="fa fa-shopping-bag text-xl"></i>
+                <span class="text-xs font-medium">订单</span>
+            </button>
+            <button class="flex flex-col items-center justify-center space-y-1 text-gray-600 nav-btn" onclick="switchTab('profile')">
+                <i class="fa fa-heart text-xl"></i>
+                <span class="text-xs font-medium">我的</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // 商品数据
+        const products = [
+            // 元气包包
+            {
+                id: 1,
+                name: "萝卜丝馒头",
+                price: 3.50,
+                originalPrice: 4.00,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "mantou",
+                rating: 4.8,
+                sales: 1256,
+                description: "新鲜萝卜丝，清香爽口，传统手工制作",
+                nutrition: { calories: 120, protein: 4, carbs: 25, fat: 1 }
+            },
+            {
+                id: 2,
+                name: "笋干肉馒头",
+                price: 4.50,
+                originalPrice: 5.00,
+                image: "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                category: "mantou",
+                rating: 4.9,
+                sales: 892,
+                description: "鲜嫩笋干配精选猪肉，香味浓郁",
+                nutrition: { calories: 150, protein: 8, carbs: 22, fat: 5 }
+            },
+            {
+                id: 3,
+                name: "麻油素包",
+                price: 3.80,
+                originalPrice: 4.20,
+                image: "https://aka.doubaocdn.com/s/C0jE1wC9AR",
+                category: "mantou",
+                rating: 4.7,
+                sales: 1567,
+                description: "青菜香菇豆干，麻油香浓郁，素食首选",
+                nutrition: { calories: 110, protein: 5, carbs: 23, fat: 2 }
+            },
+            {
+                id: 4,
+                name: "自制豆沙馒头",
+                price: 3.20,
+                originalPrice: 3.60,
+                image: "https://aka.doubaocdn.com/s/Zhqw1wC9AR",
+                category: "mantou",
+                rating: 4.6,
+                sales: 654,
+                description: "自制红豆沙，甜而不腻，口感绵软",
+                nutrition: { calories: 130, protein: 3, carbs: 28, fat: 1 }
+            },
+            {
+                id: 5,
+                name: "三丁馒头",
+                price: 4.20,
+                originalPrice: 4.80,
+                image: "https://aka.doubaocdn.com/s/vqqJ1wC9AQ",
+                category: "mantou",
+                rating: 4.9,
+                sales: 789,
+                description: "猪肉笋丁香菇丁，营养丰富，口感丰富",
+                nutrition: { calories: 140, protein: 7, carbs: 24, fat: 4 }
+            },
+            
+            // 创艺手作
+            {
+                id: 6,
+                name: "奶香芝士紫薯包",
+                price: 5.50,
+                originalPrice: 6.20,
+                image: "https://aka.doubaocdn.com/s/v6bD1wC9AQ",
+                category: "creative",
+                rating: 4.9,
+                sales: 987,
+                description: "香甜紫薯配浓郁芝士，奶香四溢",
+                nutrition: { calories: 160, protein: 6, carbs: 30, fat: 3 }
+            },
+            {
+                id: 7,
+                name: "培根土豆包",
+                price: 5.80,
+                originalPrice: 6.50,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "creative",
+                rating: 4.8,
+                sales: 756,
+                description: "香煎培根配土豆泥，咸香可口",
+                nutrition: { calories: 170, protein: 8, carbs: 25, fat: 6 }
+            },
+            {
+                id: 8,
+                name: "海苔肠仔馒头",
+                price: 5.20,
+                originalPrice: 5.80,
+                image: "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                category: "creative",
+                rating: 4.7,
+                sales: 823,
+                description: "Q弹肠仔配海苔香，小朋友最爱",
+                nutrition: { calories: 150, protein: 7, carbs: 26, fat: 4 }
+            },
+            {
+                id: 9,
+                name: "红糖开花馒头",
+                price: 4.00,
+                originalPrice: 4.50,
+                image: "https://aka.doubaocdn.com/s/C0jE1wC9AR",
+                category: "creative",
+                rating: 4.8,
+                sales: 1123,
+                description: "古法红糖，自然开花，香甜松软",
+                nutrition: { calories: 140, protein: 4, carbs: 32, fat: 1 }
+            },
+            {
+                id: 10,
+                name: "无敌葱葱花卷",
+                price: 3.50,
+                originalPrice: 4.00,
+                image: "https://aka.doubaocdn.com/s/Zhqw1wC9AR",
+                category: "creative",
+                rating: 4.6,
+                sales: 1345,
+                description: "新鲜香葱，层层叠叠，香味扑鼻",
+                nutrition: { calories: 120, protein: 4, carbs: 25, fat: 2 }
+            },
+            {
+                id: 11,
+                name: "海苔肉松花卷",
+                price: 4.80,
+                originalPrice: 5.30,
+                image: "https://aka.doubaocdn.com/s/vqqJ1wC9AQ",
+                category: "creative",
+                rating: 4.7,
+                sales: 678,
+                description: "海苔肉松，咸香可口，层次丰富",
+                nutrition: { calories: 150, protein: 7, carbs: 24, fat: 5 }
+            },
+            {
+                id: 12,
+                name: "红糖核桃糖三角",
+                price: 4.20,
+                originalPrice: 4.80,
+                image: "https://aka.doubaocdn.com/s/v6bD1wC9AQ",
+                category: "creative",
+                rating: 4.8,
+                sales: 890,
+                description: "红糖核桃，香甜滋补，传统工艺",
+                nutrition: { calories: 160, protein: 5, carbs: 30, fat: 4 }
+            },
+            
+            // 烧卖
+            {
+                id: 13,
+                name: "原味儿糯米烧卖",
+                price: 6.80,
+                originalPrice: 7.50,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "shaomai",
+                rating: 4.8,
+                sales: 1456,
+                description: "优质糯米，传统工艺，原汁原味",
+                nutrition: { calories: 180, protein: 6, carbs: 35, fat: 3 }
+            },
+            {
+                id: 14,
+                name: "咸蛋黄糯米烧卖",
+                price: 8.50,
+                originalPrice: 9.50,
+                image: "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                category: "shaomai",
+                rating: 4.9,
+                sales: 987,
+                description: "咸香蛋黄配糯米，口感丰富",
+                nutrition: { calories: 200, protein: 8, carbs: 36, fat: 6 }
+            },
+            {
+                id: 15,
+                name: "肉松芝士糯米烧卖",
+                price: 9.20,
+                originalPrice: 10.20,
+                image: "https://aka.doubaocdn.com/s/C0jE1wC9AR",
+                category: "shaomai",
+                rating: 4.7,
+                sales: 765,
+                description: "肉松芝士双重美味，拉丝口感",
+                nutrition: { calories: 210, protein: 10, carbs: 34, fat: 7 }
+            },
+            {
+                id: 16,
+                name: "腊味儿烧卖",
+                price: 8.80,
+                originalPrice: 9.80,
+                image: "https://aka.doubaocdn.com/s/Zhqw1wC9AR",
+                category: "shaomai",
+                rating: 4.6,
+                sales: 654,
+                description: "精选腊味，香味浓郁，口感醇厚",
+                nutrition: { calories: 190, protein: 9, carbs: 32, fat: 6 }
+            },
+            {
+                id: 17,
+                name: "乌米松子烧卖",
+                price: 9.50,
+                originalPrice: 10.50,
+                image: "https://aka.doubaocdn.com/s/vqqJ1wC9AQ",
+                category: "shaomai",
+                rating: 4.8,
+                sales: 543,
+                description: "乌米松子，营养丰富，口感独特",
+                nutrition: { calories: 200, protein: 8, carbs: 33, fat: 7 }
+            },
+            
+            // 团子
+            {
+                id: 18,
+                name: "萝卜丝团子",
+                price: 4.50,
+                originalPrice: 5.00,
+                image: "https://aka.doubaocdn.com/s/v6bD1wC9AQ",
+                category: "tuanzi",
+                rating: 4.7,
+                sales: 876,
+                description: "新鲜萝卜丝，外皮软糯，内馅鲜美",
+                nutrition: { calories: 130, protein: 5, carbs: 26, fat: 2 }
+            },
+            {
+                id: 19,
+                name: "青菜团子",
+                price: 4.20,
+                originalPrice: 4.60,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "tuanzi",
+                rating: 4.6,
+                sales: 923,
+                description: "时令青菜，清香爽口，素食佳品",
+                nutrition: { calories: 120, protein: 4, carbs: 25, fat: 1 }
+            },
+            {
+                id: 20,
+                name: "荠菜团子",
+                price: 4.80,
+                originalPrice: 5.30,
+                image: "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                category: "tuanzi",
+                rating: 4.8,
+                sales: 765,
+                description: "野生荠菜，鲜美清香，春季限定",
+                nutrition: { calories: 130, protein: 6, carbs: 25, fat: 3 }
+            },
+            {
+                id: 21,
+                name: "笋干团子",
+                price: 4.60,
+                originalPrice: 5.10,
+                image: "https://aka.doubaocdn.com/s/C0jE1wC9AR",
+                category: "tuanzi",
+                rating: 4.7,
+                sales: 643,
+                description: "鲜嫩笋干，香味浓郁，口感丰富",
+                nutrition: { calories: 125, protein: 5, carbs: 26, fat: 2 }
+            },
+            
+            // 大馄饨
+            {
+                id: 22,
+                name: "荠菜肉大馄饨",
+                price: 12.80,
+                originalPrice: 14.20,
+                image: "https://aka.doubaocdn.com/s/Zhqw1wC9AR",
+                category: "big-wonton",
+                rating: 4.9,
+                sales: 1234,
+                description: "野生荠菜配猪肉，鲜美无比，12只装",
+                nutrition: { calories: 280, protein: 18, carbs: 35, fat: 8 }
+            },
+            {
+                id: 23,
+                name: "青菜肉大馄饨",
+                price: 11.80,
+                originalPrice: 13.20,
+                image: "https://aka.doubaocdn.com/s/vqqJ1wC9AQ",
+                category: "big-wonton",
+                rating: 4.8,
+                sales: 1356,
+                description: "新鲜青菜配猪肉，清香爽口，12只装",
+                nutrition: { calories: 260, protein: 16, carbs: 36, fat: 7 }
+            },
+            {
+                id: 24,
+                name: "茭白肉大馄饨",
+                price: 13.50,
+                originalPrice: 15.00,
+                image: "https://aka.doubaocdn.com/s/v6bD1wC9AQ",
+                category: "big-wonton",
+                rating: 4.7,
+                sales: 876,
+                description: "鲜嫩茭白配猪肉，口感清甜，12只装",
+                nutrition: { calories: 270, protein: 17, carbs: 34, fat: 8 }
+            },
+            {
+                id: 25,
+                name: "香菇肉大馄饨",
+                price: 12.50,
+                originalPrice: 14.00,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "big-wonton",
+                rating: 4.8,
+                sales: 987,
+                description: "鲜香香菇配猪肉，香味浓郁，12只装",
+                nutrition: { calories: 275, protein: 17, carbs: 35, fat: 8 }
+            },
+            {
+                id: 26,
+                name: "香菜皮蛋大馄饨",
+                price: 14.20,
+                originalPrice: 15.80,
+                image: "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                category: "big-wonton",
+                rating: 4.6,
+                sales: 543,
+                description: "独特香菜皮蛋，口感丰富，12只装",
+                nutrition: { calories: 285, protein: 18, carbs: 33, fat: 9 }
+            },
+            
+            // 小馄饨
+            {
+                id: 27,
+                name: "鲜肉小馄饨",
+                price: 9.80,
+                originalPrice: 11.00,
+                image: "https://aka.doubaocdn.com/s/C0jE1wC9AR",
+                category: "small-wonton",
+                rating: 4.8,
+                sales: 1567,
+                description: "精选猪肉，鲜美汤汁，18只装",
+                nutrition: { calories: 220, protein: 15, carbs: 30, fat: 6 }
+            },
+            {
+                id: 28,
+                name: "紫菜鲜肉小馄饨",
+                price: 10.50,
+                originalPrice: 11.80,
+                image: "https://aka.doubaocdn.com/s/Zhqw1wC9AR",
+                category: "small-wonton",
+                rating: 4.7,
+                sales: 1234,
+                description: "紫菜配鲜肉，汤鲜味美，18只装",
+                nutrition: { calories: 230, protein: 16, carbs: 31, fat: 7 }
+            },
+            {
+                id: 29,
+                name: "皮蛋鲜肉小馄饨",
+                price: 11.20,
+                originalPrice: 12.50,
+                image: "https://aka.doubaocdn.com/s/vqqJ1wC9AQ",
+                category: "small-wonton",
+                rating: 4.6,
+                sales: 765,
+                description: "皮蛋配鲜肉，口感独特，18只装",
+                nutrition: { calories: 240, protein: 17, carbs: 30, fat: 8 }
+            },
+            {
+                id: 30,
+                name: "香菜鲜肉小馄饨",
+                price: 10.80,
+                originalPrice: 12.00,
+                image: "https://aka.doubaocdn.com/s/v6bD1wC9AQ",
+                category: "small-wonton",
+                rating: 4.7,
+                sales: 890,
+                description: "香菜配鲜肉，清香开胃，18只装",
+                nutrition: { calories: 235, protein: 16, carbs: 31, fat: 7 }
+            },
+            {
+                id: 31,
+                name: "咸蛋黄鲜肉小馄饨",
+                price: 11.50,
+                originalPrice: 12.80,
+                image: "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                category: "small-wonton",
+                rating: 4.8,
+                sales: 678,
+                description: "咸蛋黄配鲜肉，咸香可口，18只装",
+                nutrition: { calories: 245, protein: 17, carbs: 30, fat: 9 }
+            }
+        ];
+
+        // 订单数据
+        const orders = [
+            {
+                id: 1001,
+                orderNumber: "ORD20260314001",
+                date: "2026-03-14",
+                time: "07:30",
+                total: 38.97,
+                status: "已完成",
+                statusColor: "success",
+                items: [
+                    { productId: 1, quantity: 2, price: 3.50 },
+                    { productId: 3, quantity: 1, price: 3.80 }
+                ],
+                pointsEarned: 39,
+                user: "早餐达人",
+                pickupCode: "8264"
+            },
+            {
+                id: 1002,
+                orderNumber: "ORD20260313002",
+                date: "2026-03-13",
+                time: "08:15",
+                total: 15.99,
+                status: "已完成",
+                statusColor: "success",
+                items: [
+                    { productId: 22, quantity: 1, price: 12.80 }
+                ],
+                pointsEarned: 16,
+                user: "早餐达人",
+                pickupCode: "1973"
+            },
+            {
+                id: 1003,
+                orderNumber: "ORD20260312003",
+                date: "2026-03-12",
+                time: "07:45",
+                total: 30.98,
+                status: "已完成",
+                statusColor: "success",
+                items: [
+                    { productId: 13, quantity: 1, price: 6.80 },
+                    { productId: 14, quantity: 1, price: 8.50 }
+                ],
+                pointsEarned: 31,
+                user: "早餐达人",
+                pickupCode: "5621"
+            },
+            {
+                id: 1004,
+                orderNumber: "ORD20260311004",
+                date: "2026-03-11",
+                time: "08:00",
+                total: 29.98,
+                status: "已取消",
+                statusColor: "danger",
+                items: [
+                    { productId: 18, quantity: 2, price: 4.50 }
+                ],
+                pointsEarned: 0,
+                user: "早餐达人",
+                pickupCode: "9417"
+            },
+            {
+                id: 1005,
+                orderNumber: "ORD20260310005",
+                date: "2026-03-10",
+                time: "07:20",
+                total: 25.98,
+                status: "已完成",
+                statusColor: "success",
+                items: [
+                    { productId: 1, quantity: 2, price: 3.50 }
+                ],
+                pointsEarned: 26,
+                user: "早餐爱好者",
+                pickupCode: "3852"
+            }
+        ];
+
+        // 积分记录数据
+        const pointsHistory = [
+            {
+                id: 1,
+                date: "2026-03-14",
+                description: "购买早餐获得积分",
+                points: 39,
+                type: "earn",
+                balance: 1256
+            },
+            {
+                id: 2,
+                date: "2026-03-13",
+                description: "购买早餐获得积分",
+                points: 16,
+                type: "earn",
+                balance: 1217
+            },
+            {
+                id: 3,
+                date: "2026-03-12",
+                description: "购买早餐获得积分",
+                points: 31,
+                type: "earn",
+                balance: 1201
+            },
+            {
+                id: 4,
+                date: "2026-03-11",
+                description: "积分兑换优惠券",
+                points: -100,
+                type: "spend",
+                balance: 1163
+            },
+            {
+                id: 5,
+                date: "2026-03-10",
+                description: "购买早餐获得积分",
+                points: 26,
+                type: "earn",
+                balance: 1263
+            },
+            {
+                id: 6,
+                date: "2026-03-09",
+                description: "每日签到获得积分",
+                points: 10,
+                type: "earn",
+                balance: 1238
+            }
+        ];
+
+        // 优惠券数据
+        const coupons = [
+            {
+                id: 1,
+                name: "满50元减3元券",
+                minAmount: 50,
+                discount: 3,
+                expireDate: "2026-04-15",
+                isUsed: false,
+                isExpired: false
+            },
+            {
+                id: 2,
+                name: "满100元减10元券",
+                minAmount: 100,
+                discount: 10,
+                expireDate: "2026-03-20",
+                isUsed: false,
+                isExpired: true
+            },
+            {
+                id: 3,
+                name: "满200元减50元券",
+                minAmount: 200,
+                discount: 50,
+                expireDate: "2026-05-01",
+                isUsed: true,
+                isExpired: false
+            }
+        ];
+
+        // 收货地址数据
+        const addresses = [
+            {
+                id: 1,
+                area: "武进区",
+                street: "湖塘街道",
+                detail: "吾悦广场1号楼1001室",
+                contactName: "张三",
+                contactPhone: "13800138000",
+                isDefault: true
+            }
+        ];
+
+        // 取件码数据
+        const pickupCodes = [
+            {
+                id: 1,
+                orderNumber: "ORD20260314001",
+                pickupCode: "8264",
+                pickupTime: "2026-03-14 08:00",
+                status: "已提取",
+                remark: "请在8点前提取"
+            },
+            {
+                id: 2,
+                orderNumber: "ORD20260313002",
+                pickupCode: "1973",
+                pickupTime: "2026-03-13 08:30",
+                status: "已提取",
+                remark: "无"
+            },
+            {
+                id: 3,
+                orderNumber: "ORD20260312003",
+                pickupCode: "5621",
+                pickupTime: "2026-03-12 09:00",
+                status: "待提取",
+                remark: "请在9点后提取"
+            }
+        ];
+
+        // 用户数据
+        const users = [
+            {
+                id: 1,
+                name: "早餐达人",
+                totalPurchase: 115.92,
+                orderCount: 4,
+                lastPurchaseTime: "2026-03-14 07:30",
+                points: 1256
+            },
+            {
+                id: 2,
+                name: "早餐爱好者",
+                totalPurchase: 25.98,
+                orderCount: 1,
+                lastPurchaseTime: "2026-03-10 07:20",
+                points: 26
+            },
+            {
+                id: 3,
+                name: "健康早餐",
+                totalPurchase: 45.97,
+                orderCount: 2,
+                lastPurchaseTime: "2026-03-13 08:00",
+                points: 46
+            }
+        ];
+
+        // 常州市街道数据
+        const cityStreets = {
+            "天宁区": ["兰陵街道", "天宁街道", "青龙街道", "茶山街道", "红梅街道", "雕庄街道", "郑陆镇"],
+            "钟楼区": ["北港街道", "新闸街道", "五星街道", "永红街道", "西林街道", "南大街街道", "荷花池街道"],
+            "新北区": ["河海街道", "三井街道", "龙虎塘街道", "春江街道", "孟河镇", "西夏墅镇", "罗溪镇", "薛家镇", "奔牛镇"],
+            "武进区": ["湖塘镇", "牛塘镇", "洛阳镇", "遥观镇", "横林镇", "横山桥镇", "郑陆镇", "雪堰镇", "前黄镇", "礼嘉镇", "邹区镇", "嘉泽镇", "湟里镇", "西湖街道"],
+            "经开区": ["潞城街道", "丁堰街道", "戚墅堰街道", "横山桥镇", "横林镇", "遥观镇"]
+        };
+
+        // 购物车数据
+        let cart = [];
+        let isAdminLoggedIn = false;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderOrderHistory();
+            renderPointsHistory();
+            updateCartDisplay();
+            updateCouponsList();
+            updateSigninDate();
+            calculateIncomeStats();
+            renderUserPurchaseStats();
+            renderAllOrders();
+            renderPickupCodes();
+            
+            // 添加点单页面分类切换事件
+            // 桌面端分类切换
+            document.querySelectorAll('.order-category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除所有按钮的选中状态
+                    document.querySelectorAll('.order-category-btn').forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('text-gray-700');
+                    });
+                    
+                    // 添加当前按钮的选中状态
+                    this.classList.remove('text-gray-700');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 同步移动端按钮状态
+                    document.querySelectorAll('.order-category-btn-mobile').forEach(b => {
+                        if (b.getAttribute('data-category') === this.getAttribute('data-category')) {
+                            b.classList.remove('bg-gray-100', 'text-gray-700');
+                            b.classList.add('bg-primary', 'text-white');
+                        } else {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-gray-700');
+                        }
+                    });
+                    
+                    // 筛选商品
+                    const category = this.getAttribute('data-category');
+                    renderOrderProducts(category);
+                });
+            });
+            
+            // 移动端分类切换
+            document.querySelectorAll('.order-category-btn-mobile').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除所有按钮的选中状态
+                    document.querySelectorAll('.order-category-btn-mobile').forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    
+                    // 添加当前按钮的选中状态
+                    this.classList.remove('bg-gray-100', 'text-gray-700');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 同步桌面端按钮状态
+                    document.querySelectorAll('.order-category-btn').forEach(b => {
+                        if (b.getAttribute('data-category') === this.getAttribute('data-category')) {
+                            b.classList.remove('text-gray-700');
+                            b.classList.add('bg-primary', 'text-white');
+                        } else {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('text-gray-700');
+                        }
+                    });
+                    
+                    // 筛选商品
+                    const category = this.getAttribute('data-category');
+                    renderOrderProducts(category);
+                });
+            });
+            
+            // 添加区域选择事件
+            document.getElementById('area-select').addEventListener('change', function() {
+                const selectedArea = this.value;
+                updateStreetSelect(selectedArea);
+            });
+        });
+
+        // 渲染商品列表
+        function renderProducts() {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'glass-card rounded-xl overflow-hidden card-shadow hover:shadow-xl transition-all duration-300 animate-slide-up';
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-primary">
+                            ${product.rating} <i class="fa fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="absolute top-2 left-2 bg-danger text-white rounded-full px-2 py-1 text-xs font-medium">
+                            热销
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-1 line-clamp-1">${product.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2 line-clamp-2">${product.description}</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl font-bold text-primary">¥${product.price.toFixed(2)}</span>
+                                <span class="text-sm text-gray-500 line-through">¥${product.originalPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fa fa-shopping-cart mr-1"></i>
+                                ${product.sales}人已购
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="addToCart(${product.id})" class="flex-1 bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center space-x-1">
+                                <i class="fa fa-plus"></i>
+                                <span>加入购物车</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productList.appendChild(productCard);
+            });
+        }
+
+        // 渲染点单页面商品列表
+        function renderOrderProducts(category = 'all') {
+            // 渲染桌面端商品列表
+            const productListDesktop = document.getElementById('order-product-list-desktop');
+            productListDesktop.innerHTML = '';
+            
+            // 渲染移动端商品列表
+            const productListMobile = document.getElementById('order-product-list-mobile');
+            productListMobile.innerHTML = '';
+            
+            const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
+            
+            // 桌面端商品卡片
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'glass-card rounded-xl overflow-hidden card-shadow hover:shadow-xl transition-all duration-300 animate-slide-up flex items-center p-4 cursor-pointer';
+                productCard.onclick = () => showProductDetail(product.id);
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-20 h-20 object-cover rounded-lg mr-4">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-gray-800 mb-1 line-clamp-1">${product.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2 line-clamp-2">${product.description}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl font-bold text-primary">¥${product.price.toFixed(2)}</span>
+                                <span class="text-sm text-gray-500 line-through">¥${product.originalPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fa fa-shopping-cart mr-1"></i>
+                                ${product.sales}人已购
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); addToCart(${product.id})" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors ml-4">
+                        <i class="fa fa-plus text-sm"></i>
+                    </button>
+                `;
+                productListDesktop.appendChild(productCard);
+            });
+            
+            // 移动端商品卡片
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'glass-card rounded-xl overflow-hidden card-shadow hover:shadow-xl transition-all duration-300 animate-slide-up cursor-pointer';
+                productCard.onclick = () => showProductDetail(product.id);
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-t-xl">
+                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-primary">
+                            ${product.rating} <i class="fa fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="absolute top-2 left-2 bg-danger text-white rounded-full px-2 py-1 text-xs font-medium">
+                            热销
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h3 class="font-bold text-gray-800 mb-1 line-clamp-1 text-sm">${product.name}</h3>
+                        <p class="text-xs text-gray-600 mb-2 line-clamp-2">${product.description}</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-1">
+                                <span class="text-lg font-bold text-primary">¥${product.price.toFixed(2)}</span>
+                                <span class="text-xs text-gray-500 line-through">¥${product.originalPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fa fa-shopping-cart mr-1"></i>
+                                ${product.sales}
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); addToCart(${product.id})" class="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm">
+                            <i class="fa fa-plus mr-1"></i>
+                            加入购物车
+                        </button>
+                    </div>
+                `;
+                productListMobile.appendChild(productCard);
+            });
+        }
+
+        // 显示商品详情
+        function showProductDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            // 设置商品标题
+            document.getElementById('product-detail-title').textContent = product.name;
+            
+            // 设置商品详情内容
+            const productDetailContent = document.getElementById('product-detail-content');
+            
+            // 模拟商品更多图片
+            const productImages = [
+                product.image,
+                "https://aka.doubaocdn.com/s/uV571wC9AQ",
+                "https://aka.doubaocdn.com/s/TGP31wC9AQ",
+                "https://aka.doubaocdn.com/s/C0jE1wC9AR"
+            ];
+            
+            // 模拟商品详细描述
+            const productDescriptions = {
+                1: "面皮就是新疆面粉哦！一个克重在100g左右\n配料表：小麦粉，粉丝包（水，粉丝，油，韭菜，猪肉，鸡肉，鸡精调味料，味精，食用盐，虾皮，辣椒粉，酿造酱油，生姜，香辛料），水，食用油，白砂糖\n辣度提醒：就是我一个吃红烧牛肉面都觉得有点辣的人感觉这个包子不辣~放的辣椒是不辣的那种！\n不算油的！是个咸口的好吃包子！",
+                2: "精选新鲜笋干和优质猪肉，传统手工制作，口感鲜美，香味浓郁。笋干的脆嫩搭配猪肉的鲜美，是早餐的绝佳选择。",
+                3: "新鲜青菜、香菇、豆干，配以浓郁麻油香，素食爱好者的首选。口感清爽，营养丰富，健康美味。",
+                4: "自制红豆沙，甜而不腻，口感绵软。精选优质红豆，传统工艺制作，保留红豆的天然香甜。",
+                5: "猪肉、笋丁、香菇丁，营养丰富，口感丰富。三种食材的完美搭配，每一口都有不同的惊喜。",
+                6: "香甜紫薯配浓郁芝士，奶香四溢。紫薯的天然甜味与芝士的浓郁口感完美融合。",
+                7: "香煎培根配土豆泥，咸香可口。培根的烟熏香味与土豆泥的绵软口感相得益彰。",
+                8: "Q弹肠仔配海苔香，小朋友最爱。肠仔的Q弹与海苔的鲜香完美结合。",
+                9: "古法红糖，自然开花，香甜松软。传统工艺制作，红糖的香甜与馒头的松软完美融合。",
+                10: "新鲜香葱，层层叠叠，香味扑鼻。香葱的清香与面团的麦香完美结合。",
+                11: "海苔肉松，咸香可口，层次丰富。海苔的鲜香与肉松的咸香完美融合。",
+                12: "红糖核桃，香甜滋补，传统工艺。红糖的香甜与核桃的酥脆完美结合。",
+                13: "优质糯米，传统工艺，原汁原味。糯米的软糯与馅料的鲜美完美融合。",
+                14: "咸香蛋黄配糯米，口感丰富。咸蛋黄的咸香与糯米的软糯完美结合。",
+                15: "肉松芝士双重美味，拉丝口感。肉松的咸香与芝士的浓郁完美融合。",
+                16: "精选腊味，香味浓郁，口感醇厚。腊味的独特香味与糯米的软糯完美结合。",
+                17: "乌米松子，营养丰富，口感独特。乌米的独特口感与松子的酥脆完美结合。",
+                18: "新鲜萝卜丝，外皮软糯，内馅鲜美。萝卜丝的清甜与外皮的软糯完美结合。",
+                19: "时令青菜，清香爽口，素食佳品。青菜的清香与外皮的软糯完美结合。",
+                20: "野生荠菜，鲜美清香，春季限定。荠菜的鲜美与外皮的软糯完美结合。",
+                21: "鲜嫩笋干，香味浓郁，口感丰富。笋干的脆嫩与外皮的软糯完美结合。",
+                22: "野生荠菜配猪肉，鲜美无比，12只装。荠菜的鲜美与猪肉的鲜美完美结合。",
+                23: "新鲜青菜配猪肉，清香爽口，12只装。青菜的清香与猪肉的鲜美完美结合。",
+                24: "鲜嫩茭白配猪肉，口感清甜，12只装。茭白的清甜与猪肉的鲜美完美结合。",
+                25: "鲜香香菇配猪肉，香味浓郁，12只装。香菇的鲜香与猪肉的鲜美完美结合。",
+                26: "独特香菜皮蛋，口感丰富，12只装。香菜的清香与皮蛋的独特口感完美结合。",
+                27: "精选猪肉，鲜美汤汁，18只装。猪肉的鲜美与汤汁的浓郁完美结合。",
+                28: "紫菜配鲜肉，汤鲜味美，18只装。紫菜的鲜香与鲜肉的鲜美完美结合。",
+                29: "皮蛋配鲜肉，口感独特，18只装。皮蛋的独特口感与鲜肉的鲜美完美结合。",
+                30: "香菜配鲜肉，清香开胃，18只装。香菜的清香与鲜肉的鲜美完美结合。",
+                31: "咸蛋黄配鲜肉，咸香可口，18只装。咸蛋黄的咸香与鲜肉的鲜美完美结合。"
+            };
+            
+            const description = productDescriptions[product.id] || product.description;
+            
+            productDetailContent.innerHTML = `
+                <!-- 商品图片轮播 -->
+                <div class="relative mb-4">
+                    <div class="flex overflow-x-auto space-x-2 pb-2">
+                        ${productImages.map((img, index) => `
+                            <img src="${img}" alt="${product.name} 图片${index + 1}" class="w-24 h-24 object-cover rounded-lg flex-shrink-0">
+                        `).join('')}
+                    </div>
+                    <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-primary">
+                        ${product.rating} <i class="fa fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+                
+                <!-- 商品基本信息 -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-500">月销 ${product.sales}</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">热销</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl font-bold text-primary">¥${product.price.toFixed(2)}</span>
+                            <span class="text-sm text-gray-500 line-through">¥${product.originalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品详细描述 -->
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-800 mb-2">商品详情</h4>
+                    <div class="text-sm text-gray-600 whitespace-pre-line">${description}</div>
+                </div>
+                
+                <!-- 营养信息 -->
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-800 mb-2">营养信息</h4>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">热量</span>
+                            <span class="font-medium">${product.nutrition.calories} kcal</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">蛋白质</span>
+                            <span class="font-medium">${product.nutrition.protein} g</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">碳水化合物</span>
+                            <span class="font-medium">${product.nutrition.carbs} g</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">脂肪</span>
+                            <span class="font-medium">${product.nutrition.fat} g</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex items-center space-x-3 pt-4 border-t">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="event.stopPropagation(); updateCartItemQuantity(${product.id}, -1)" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                            <i class="fa fa-minus text-xs"></i>
+                        </button>
+                        <span id="product-detail-quantity" class="text-sm font-medium">1</span>
+                        <button onclick="event.stopPropagation(); updateCartItemQuantity(${product.id}, 1)" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                            <i class="fa fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                    <button onclick="event.stopPropagation(); addToCart(${product.id})" class="flex-1 bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        加入购物车
+                    </button>
+                </div>
+            `;
+            
+            // 显示商品详情弹窗
+            document.getElementById('product-detail-modal').classList.remove('hidden');
+            document.getElementById('product-detail-modal').classList.add('flex');
+            
+            // 更新数量显示
+            const quantityElement = document.getElementById('product-detail-quantity');
+            if (quantityElement) {
+                const item = cart.find(item => item.id === productId);
+                quantityElement.textContent = item ? item.quantity : '1';
+            }
+        }
+
+        // 关闭商品详情
+        function closeProductDetail() {
+            document.getElementById('product-detail-modal').classList.add('hidden');
+            document.getElementById('product-detail-modal').classList.remove('flex');
+        }
+
+        // 筛选商品
+        function filterProducts(category) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+            
+            const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
+            
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'glass-card rounded-xl overflow-hidden card-shadow hover:shadow-xl transition-all duration-300 animate-slide-up';
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-primary">
+                            ${product.rating} <i class="fa fa-star text-yellow-400"></i>
+                        </div>
+                        <div class="absolute top-2 left-2 bg-danger text-white rounded-full px-2 py-1 text-xs font-medium">
+                            热销
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-1 line-clamp-1">${product.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2 line-clamp-2">${product.description}</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl font-bold text-primary">¥${product.price.toFixed(2)}</span>
+                                <span class="text-sm text-gray-500 line-through">¥${product.originalPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fa fa-shopping-cart mr-1"></i>
+                                ${product.sales}人已购
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="addToCart(${product.id})" class="flex-1 bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center space-x-1">
+                                <i class="fa fa-plus"></i>
+                                <span>加入购物车</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productList.appendChild(productCard);
+            });
+        }
+
+        // 添加到购物车
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            
+            updateCartDisplay();
+            showAddToCartAnimation();
+            
+            // 更新商品详情弹窗中的数量显示
+            const quantityElement = document.getElementById('product-detail-quantity');
+            if (quantityElement) {
+                const item = cart.find(item => item.id === productId);
+                if (item) {
+                    quantityElement.textContent = item.quantity;
+                }
+            }
+        }
+
+        // 显示添加到购物车动画
+        function showAddToCartAnimation() {
+            const cartBtn = document.querySelector('button[onclick="toggleCart()"]');
+            cartBtn.classList.add('animate-bounce-gentle');
+            setTimeout(() => {
+                cartBtn.classList.remove('animate-bounce-gentle');
+            }, 600);
+        }
+
+        // 更新购物车显示
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cart-count');
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            // 更新购物车数量
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            // 更新购物车商品列表
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa fa-utensils text-4xl mb-3"></i>
+                        <p>购物车是空的</p>
+                        <p class="text-sm">快去挑选美味的早餐吧</p>
+                    </div>
+                `;
+                cartTotal.textContent = '¥0.00';
+                checkoutBtn.disabled = true;
+                checkoutBtn.classList.add('bg-gray-400');
+                checkoutBtn.classList.remove('bg-primary', 'hover:bg-primary/90');
+                return;
+            }
+            
+            cartItems.innerHTML = '';
+            let totalPrice = 0;
+            
+            cart.forEach(item => {
+                totalPrice += item.price * item.quantity;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'flex items-center space-x-3 p-3 border-b border-gray-100';
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-800 text-sm line-clamp-1">${item.name}</h4>
+                        <p class="text-xs text-gray-500">¥${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="updateCartItemQuantity(${item.id}, -1)" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                            <i class="fa fa-minus text-xs"></i>
+                        </button>
+                        <span class="text-sm font-medium">${item.quantity}</span>
+                        <button onclick="updateCartItemQuantity(${item.id}, 1)" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                            <i class="fa fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fa fa-trash text-xs"></i>
+                    </button>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+            
+            cartTotal.textContent = `¥${totalPrice.toFixed(2)}`;
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove('bg-gray-400');
+            checkoutBtn.classList.add('bg-primary', 'hover:bg-primary/90');
+        }
+
+        // 更新购物车商品数量
+        function updateCartItemQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (!item) {
+                // 如果购物车中没有该商品，添加一个
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    cart.push({ ...product, quantity: 1 });
+                }
+                updateCartDisplay();
+                // 更新商品详情弹窗中的数量显示
+                const quantityElement = document.getElementById('product-detail-quantity');
+                if (quantityElement) {
+                    quantityElement.textContent = '1';
+                }
+                return;
+            }
+            
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            updateCartDisplay();
+            
+            // 更新商品详情弹窗中的数量显示
+            const quantityElement = document.getElementById('product-detail-quantity');
+            if (quantityElement) {
+                quantityElement.textContent = item.quantity;
+            }
+        }
+
+        // 从购物车移除商品
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartDisplay();
+        }
+
+        // 切换购物车显示
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cart-sidebar');
+            if (cartSidebar.classList.contains('hidden')) {
+                cartSidebar.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                cartSidebar.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // 结算
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            // 计算总金额
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // 生成订单号
+            const now = new Date();
+            const orderNumber = `ORD${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+            
+            // 生成取件码
+            const pickupCode = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            // 创建订单
+            const newOrder = {
+                id: orders.length + 1,
+                orderNumber: orderNumber,
+                date: now.toISOString().split('T')[0],
+                time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+                total: totalAmount,
+                status: "已完成",
+                statusColor: "success",
+                items: cart.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                pointsEarned: Math.floor(totalAmount),
+                user: "早餐达人",
+                pickupCode: pickupCode
+            };
+            
+            // 添加到订单列表
+            orders.unshift(newOrder);
+            
+            // 更新用户积分
+            const userPointsElement = document.getElementById('user-points');
+            let userPoints = parseInt(userPointsElement.textContent.replace(',', ''));
+            userPoints += newOrder.pointsEarned;
+            userPointsElement.textContent = userPoints.toLocaleString();
+            
+            // 添加积分记录
+            pointsHistory.unshift({
+                id: pointsHistory.length + 1,
+                date: newOrder.date,
+                description: "购买早餐获得积分",
+                points: newOrder.pointsEarned,
+                type: "earn",
+                balance: userPoints
+            });
+            
+            // 清空购物车
+            cart = [];
+            updateCartDisplay();
+            renderOrderHistory();
+            renderPointsHistory();
+            
+            // 提示
+            alert(`下单成功！订单号：${orderNumber}，获得${newOrder.pointsEarned}积分，取件码：${pickupCode}`);
+            
+            // 关闭购物车
+            toggleCart();
+        }
+
+        // 切换页面标签
+        function switchTab(tab) {
+            const homePage = document.querySelector('main');
+            const profilePage = document.getElementById('profile-page');
+            const orderPage = document.getElementById('order-page');
+            const navBtns = document.querySelectorAll('.nav-btn');
+            
+            // 移除所有按钮的选中状态
+            navBtns.forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-gray-600');
+            });
+            
+            // 隐藏所有页面
+            homePage.classList.add('hidden');
+            profilePage.classList.add('hidden');
+            orderPage.classList.add('hidden');
+            
+            // 显示选中的页面
+            if (tab === 'home') {
+                homePage.classList.remove('hidden');
+                document.querySelector('button[onclick="switchTab(\'home\')"]').classList.remove('text-gray-600');
+                document.querySelector('button[onclick="switchTab(\'home\')"]').classList.add('text-primary');
+            } else if (tab === 'profile') {
+                profilePage.classList.remove('hidden');
+                document.querySelector('button[onclick="switchTab(\'profile\')"]').classList.remove('text-gray-600');
+                document.querySelector('button[onclick="switchTab(\'profile\')"]').classList.add('text-primary');
+            } else if (tab === 'order') {
+                orderPage.classList.remove('hidden');
+                document.querySelector('button[onclick="switchTab(\'order\')"]').classList.remove('text-gray-600');
+                document.querySelector('button[onclick="switchTab(\'order\')"]').classList.add('text-primary');
+                renderOrderProducts(); // 渲染点单页面商品
+            }
+        }
+
+        // 渲染订单历史
+        function renderOrderHistory() {
+            const orderHistory = document.getElementById('order-history');
+            orderHistory.innerHTML = '';
+            
+            // 只显示最近3个订单
+            const recentOrders = orders.slice(0, 3);
+            
+            if (recentOrders.length === 0) {
+                orderHistory.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa fa-shopping-bag text-4xl mb-3"></i>
+                        <p>暂无订单记录</p>
+                        <p class="text-sm">快去下单吧</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentOrders.forEach(order => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer';
+                orderItem.onclick = () => showOrderDetail(order.id);
+                
+                // 获取商品名称
+                const productNames = order.items.map(item => {
+                    const product = products.find(p => p.id === item.productId);
+                    return product ? product.name : '未知商品';
+                }).join('、');
+                
+                orderItem.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="text-sm text-gray-500">订单号：${order.orderNumber}</div>
+                            <div class="text-sm text-gray-500">${order.date} ${order.time}</div>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${
+                            order.statusColor === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            <i class="fa fa-${order.statusColor === 'success' ? 'check' : 'times'} mr-1"></i>
+                            ${order.status}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-800 mb-2 line-clamp-1">${productNames}</div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-primary">¥${order.total.toFixed(2)}</span>
+                        <button class="text-primary text-sm hover:text-primary/80 transition-colors" onclick="event.stopPropagation(); repurchaseOrder(${order.id})">
+                            再次购买
+                        </button>
+                    </div>
+                `;
+                orderHistory.appendChild(orderItem);
+            });
+        }
+
+        // 显示订单详情
+        function showOrderDetail(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const orderDetailContent = document.getElementById('order-detail-content');
+            const productNames = order.items.map(item => {
+                const product = products.find(p => p.id === item.productId);
+                return product ? product.name : '未知商品';
+            }).join('、');
+            
+            orderDetailContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="border-b pb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-500">订单号：${order.orderNumber}</span>
+                            <span class="text-xs px-2 py-1 rounded-full ${
+                                order.statusColor === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">${order.status}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">${order.date} ${order.time}</div>
+                        ${order.pickupCode ? `
+                            <div class="text-sm text-gray-600 mt-1">
+                                <i class="fa fa-qrcode mr-1"></i>
+                                取件码：${order.pickupCode}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="border-b pb-3">
+                        <h4 class="font-medium text-gray-800 mb-2">商品详情</h4>
+                        ${order.items.map(item => {
+                            const product = products.find(p => p.id === item.productId);
+                            return product ? `
+                                <div class="flex justify-between items-center py-2 border-b last:border-b-0">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded">
+                                        <div>
+                                            <div class="text-sm font-medium">${product.name}</div>
+                                            <div class="text-xs text-gray-500">单价：¥${product.price}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm font-medium">×${item.quantity}</div>
+                                </div>
+                            ` : '';
+                        }).join('')}
+                    </div>
+                    
+                    <div class="border-b pb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600">小计：</span>
+                            <span class="font-medium">¥${order.total.toFixed(2)}</span>
+                        </div>
+                        ${order.pointsEarned > 0 ? `
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">获得积分：</span>
+                                <span class="text-primary font-medium">+${order.pointsEarned}积分</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="pt-3">
+                        <button onclick="repurchaseOrder(${order.id})" class="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                            再次购买
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('order-detail-modal').classList.remove('hidden');
+            document.getElementById('order-detail-modal').classList.add('flex');
+        }
+
+        // 关闭订单详情
+        function closeOrderDetail() {
+            document.getElementById('order-detail-modal').classList.add('hidden');
+            document.getElementById('order-detail-modal').classList.remove('flex');
+        }
+
+        // 再次购买订单商品
+        function repurchaseOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            order.items.forEach(item => {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    const existingItem = cart.find(c => c.id === product.id);
+                    if (existingItem) {
+                        existingItem.quantity += item.quantity;
+                    } else {
+                        cart.push({ ...product, quantity: item.quantity });
+                    }
+                }
+            });
+            
+            updateCartDisplay();
+            closeOrderDetail();
+            toggleCart();
+            
+            alert('已将订单商品添加到购物车');
+        }
+
+        // 显示所有订单
+        function showAllOrders() {
+            // 创建一个新的弹窗来显示所有订单
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50';
+            modal.onclick = function() {
+                document.body.removeChild(modal);
+            };
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'glass-card rounded-xl p-6 max-w-4xl w-full mx-4 animate-scale-in max-h-[80vh] overflow-y-auto';
+            modalContent.onclick = function(e) {
+                e.stopPropagation();
+            };
+            
+            modalContent.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">所有订单</h3>
+                    <button onclick="document.body.removeChild(this.closest('.fixed'))" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-2 text-sm text-gray-600">订单号</th>
+                                <th class="text-left py-2 text-sm text-gray-600">用户</th>
+                                <th class="text-left py-2 text-sm text-gray-600">金额</th>
+                                <th class="text-left py-2 text-sm text-gray-600">状态</th>
+                                <th class="text-left py-2 text-sm text-gray-600">取件码</th>
+                                <th class="text-left py-2 text-sm text-gray-600">时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => {
+                                const statusColor = order.statusColor === 'success' ? 'text-success' : 'text-danger';
+                                return `
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 text-sm">${order.orderNumber}</td>
+                                        <td class="py-3 text-sm">${order.user}</td>
+                                        <td class="py-3 text-sm font-medium text-primary">¥${order.total.toFixed(2)}</td>
+                                        <td class="py-3 text-sm ${statusColor}">${order.status}</td>
+                                        <td class="py-3 text-sm text-gray-600">${order.pickupCode || '-'}</td>
+                                        <td class="py-3 text-sm text-gray-600">${order.date} ${order.time}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+
+        // 显示积分明细
+        function showPointsDetail() {
+            const pointsDetailContent = document.getElementById('points-detail-content');
+            
+            pointsDetailContent.innerHTML = pointsHistory.map(record => `
+                <div class="flex justify-between items-center py-3 border-b last:border-b-0">
+                    <div>
+                        <div class="text-sm font-medium text-gray-800">${record.description}</div>
+                        <div class="text-xs text-gray-500">${record.date}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-medium ${record.points > 0 ? 'text-success' : 'text-danger'}">
+                            ${record.points > 0 ? '+' : ''}${record.points}
+                        </div>
+                        <div class="text-xs text-gray-500">余额：${record.balance}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('points-detail-modal').classList.remove('hidden');
+            document.getElementById('points-detail-modal').classList.add('flex');
+        }
+
+        // 关闭积分明细
+        function closePointsDetail() {
+            document.getElementById('points-detail-modal').classList.add('hidden');
+            document.getElementById('points-detail-modal').classList.remove('flex');
+        }
+
+        // 渲染积分记录
+        function renderPointsHistory() {
+            // 这里可以添加积分记录的渲染逻辑
+            // 目前积分记录只在弹窗中显示，所以这里暂时不需要实现
+        }
+
+        // 积分兑换函数
+        function exchangePoints(points, itemName, minAmount, discount) {
+            // 获取当前用户积分
+            const userPointsElement = document.getElementById('user-points');
+            let userPoints = parseInt(userPointsElement.textContent.replace(',', ''));
+            
+            if (userPoints >= points) {
+                userPoints -= points;
+                
+                // 更新积分显示
+                userPointsElement.textContent = userPoints.toLocaleString();
+                
+                // 添加积分记录
+                pointsHistory.unshift({
+                    id: pointsHistory.length + 1,
+                    date: new Date().toISOString().split('T')[0],
+                    description: `积分兑换${itemName}`,
+                    points: -points,
+                    type: "spend",
+                    balance: userPoints
+                });
+                
+                // 添加优惠券
+                const expireDate = new Date();
+                expireDate.setMonth(expireDate.getMonth() + 1);
+                const expireDateStr = expireDate.toISOString().split('T')[0];
+                
+                coupons.push({
+                    id: coupons.length + 1,
+                    name: itemName,
+                    minAmount: minAmount,
+                    discount: discount,
+                    expireDate: expireDateStr,
+                    isUsed: false,
+                    isExpired: false
+                });
+                
+                alert(`成功兑换${itemName}！`);
+                renderPointsHistory(); // 更新积分记录显示
+                updateCouponsList(); // 更新优惠券列表
+            } else {
+                alert('积分不足，无法兑换！');
+            }
+        }
+
+        // 显示优惠券弹窗
+        function showCoupons() {
+            document.getElementById('coupons-modal').classList.remove('hidden');
+            document.getElementById('coupons-modal').classList.add('flex');
+            updateCouponsList();
+        }
+
+        // 关闭优惠券弹窗
+        function closeCoupons() {
+            document.getElementById('coupons-modal').classList.add('hidden');
+            document.getElementById('coupons-modal').classList.remove('flex');
+        }
+
+        // 更新优惠券列表
+        function updateCouponsList() {
+            const availableCoupons = coupons.filter(coupon => !coupon.isUsed && !coupon.isExpired);
+            const expiredCoupons = coupons.filter(coupon => coupon.isExpired);
+            
+            document.getElementById('available-coupons-count').textContent = availableCoupons.length;
+            document.getElementById('expired-coupons-count').textContent = expiredCoupons.length;
+            
+            // 更新可用优惠券
+            const availableCouponsContainer = document.getElementById('available-coupons');
+            availableCouponsContainer.innerHTML = '';
+            
+            availableCoupons.forEach(coupon => {
+                const couponElement = document.createElement('div');
+                couponElement.className = 'border border-gray-200 rounded-lg p-3 mb-3';
+                couponElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-medium text-gray-800">${coupon.name}</div>
+                            <div class="text-xs text-gray-500">有效期至：${coupon.expireDate}</div>
+                        </div>
+                        <span class="text-primary font-medium">${coupon.discount}元</span>
+                    </div>
+                `;
+                availableCouponsContainer.appendChild(couponElement);
+            });
+            
+            // 更新已过期优惠券
+            const expiredCouponsContainer = document.getElementById('expired-coupons');
+            expiredCouponsContainer.innerHTML = '';
+            
+            expiredCoupons.forEach(coupon => {
+                const couponElement = document.createElement('div');
+                couponElement.className = 'border border-gray-200 rounded-lg p-3 mb-3 opacity-50';
+                couponElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-medium text-gray-800 line-through">${coupon.name}</div>
+                            <div class="text-xs text-gray-500">已过期：${coupon.expireDate}</div>
+                        </div>
+                        <span class="text-gray-500 font-medium">${coupon.discount}元</span>
+                    </div>
+                `;
+                expiredCouponsContainer.appendChild(couponElement);
+            });
+            
+            if (availableCoupons.length === 0) {
+                availableCouponsContainer.innerHTML = '<div class="text-center text-gray-500 py-4">暂无可用优惠券</div>';
+            }
+            
+            if (expiredCoupons.length === 0) {
+                expiredCouponsContainer.innerHTML = '<div class="text-center text-gray-500 py-4">暂无已过期优惠券</div>';
+            }
+        }
+
+        // 显示收货地址弹窗
+        function showAddress() {
+            document.getElementById('address-modal').classList.remove('hidden');
+            document.getElementById('address-modal').classList.add('flex');
+            
+            // 初始化区域选择
+            const areaSelect = document.getElementById('area-select');
+            areaSelect.addEventListener('change', function() {
+                const selectedArea = this.value;
+                updateStreetSelect(selectedArea);
+            });
+            
+            // 如果有默认地址，填充表单
+            const defaultAddress = addresses.find(addr => addr.isDefault);
+            if (defaultAddress) {
+                document.getElementById('area-select').value = defaultAddress.area;
+                updateStreetSelect(defaultAddress.area);
+                setTimeout(() => {
+                    document.getElementById('street-select').value = defaultAddress.street;
+                    document.getElementById('detail-address').value = defaultAddress.detail;
+                    document.getElementById('contact-name').value = defaultAddress.contactName;
+                    document.getElementById('contact-phone').value = defaultAddress.contactPhone;
+                }, 100);
+            }
+        }
+
+        // 关闭收货地址弹窗
+        function closeAddress() {
+            document.getElementById('address-modal').classList.add('hidden');
+            document.getElementById('address-modal').classList.remove('flex');
+        }
+
+        // 更新街道选择
+        function updateStreetSelect(area) {
+            const streetSelect = document.getElementById('street-select');
+            streetSelect.innerHTML = '<option value="">请选择街道</option>';
+            
+            if (area && cityStreets[area]) {
+                cityStreets[area].forEach(street => {
+                    const option = document.createElement('option');
+                    option.value = street;
+                    option.textContent = street;
+                    streetSelect.appendChild(option);
+                });
+            }
+        }
+
+        // 保存收货地址
+        function saveAddress() {
+            const area = document.getElementById('area-select').value;
+            const street = document.getElementById('street-select').value;
+            const detail = document.getElementById('detail-address').value;
+            const contactName = document.getElementById('contact-name').value;
+            const contactPhone = document.getElementById('contact-phone').value;
+            
+            if (!area || !street || !detail || !contactName || !contactPhone) {
+                alert('请填写完整的地址信息');
+                return;
+            }
+            
+            // 移除原默认地址
+            addresses.forEach(addr => addr.isDefault = false);
+            
+            // 添加新地址
+            const newAddress = {
+                id: addresses.length + 1,
+                area,
+                street,
+                detail,
+                contactName,
+                contactPhone,
+                isDefault: true
+            };
+            
+            addresses.push(newAddress);
+            
+            alert('地址保存成功');
+            closeAddress();
+        }
+
+        // 显示预定单提取弹窗
+        function showOrderPickup() {
+            document.getElementById('order-pickup-modal').classList.remove('hidden');
+            document.getElementById('order-pickup-modal').classList.add('flex');
+            
+            // 生成随机取件码
+            generatePickupCode();
+            
+            // 设置默认提取时间为1小时后
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            document.getElementById('pickup-time').value = now.toISOString().slice(0, 16);
+        }
+
+        // 关闭预定单提取弹窗
+        function closeOrderPickup() {
+            document.getElementById('order-pickup-modal').classList.add('hidden');
+            document.getElementById('order-pickup-modal').classList.remove('flex');
+        }
+
+        // 生成随机取件码
+        function generatePickupCode() {
+            const pickupCode = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById('pickup-code').value = pickupCode;
+        }
+
+        // 保存预定单提取信息
+        function saveOrderPickup() {
+            const orderNumber = document.getElementById('order-number').value;
+            const pickupCode = document.getElementById('pickup-code').value;
+            const pickupTime = document.getElementById('pickup-time').value;
+            const remark = document.getElementById('pickup-remark').value;
+            
+            if (!orderNumber || !pickupCode || !pickupTime) {
+                alert('请填写完整的提取信息');
+                return;
+            }
+            
+            // 添加到取件码列表
+            const newPickup = {
+                id: pickupCodes.length + 1,
+                orderNumber,
+                pickupCode,
+                pickupTime: new Date(pickupTime).toLocaleString(),
+                status: '待提取',
+                remark
+            };
+            
+            pickupCodes.push(newPickup);
+            
+            alert('预定单提取信息保存成功');
+            closeOrderPickup();
+            renderPickupCodes();
+        }
+
+        // 显示管理员登录弹窗
+        function showAdminLogin() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            document.getElementById('admin-login-modal').classList.add('flex');
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        // 关闭管理员登录弹窗
+        function closeAdminLogin() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-login-modal').classList.remove('flex');
+        }
+
+        // 管理员登录验证
+        function loginAdmin() {
+            const account = document.getElementById('admin-account').value;
+            const password = document.getElementById('admin-password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            // 管理员账号验证
+            if (account === '18861102939' && password === 'Amos527') {
+                isAdminLoggedIn = true;
+                closeAdminLogin();
+                
+                // 切换按钮显示
+                document.getElementById('login-admin-btn').classList.add('hidden');
+                document.getElementById('admin-btns').classList.remove('hidden');
+                
+                alert('管理员登录成功！');
+            } else {
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // 退出管理员账号
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            
+            // 切换按钮显示
+            document.getElementById('admin-btns').classList.add('hidden');
+            document.getElementById('login-admin-btn').classList.remove('hidden');
+            
+            // 关闭管理员面板
+            closeAdminPanel();
+            
+            alert('已退出管理员账号');
+        }
+
+        // 切换账号（重新登录）
+        function switchAccount() {
+            logoutAdmin();
+            setTimeout(showAdminLogin, 500);
+        }
+
+        // 显示管理员面板
+        function showAdminPanel() {
+            if (!isAdminLoggedIn) return;
+            
+            // 计算收益数据
+            calculateIncomeStats();
+            // 渲染用户购买统计
+            renderUserPurchaseStats();
+            // 渲染所有订单
+            renderAllOrders();
+            // 渲染取件码管理
+            renderPickupCodes();
+            
+            // 显示面板
+            document.getElementById('admin-panel').classList.remove('hidden');
+            document.getElementById('admin-panel').classList.add('flex');
+        }
+
+        // 关闭管理员面板
+        function closeAdminPanel() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('flex');
+        }
+
+        // 计算收益统计（日/月/总）
+        function calculateIncomeStats() {
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const monthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+            
+            // 今日收益
+            let dailyIncome = 0;
+            // 本月收益
+            let monthlyIncome = 0;
+            // 总收益
+            let totalIncome = 0;
+            
+            orders.forEach(order => {
+                if (order.status === '已完成') {
+                    totalIncome += order.total;
+                    
+                    // 本月订单
+                    if (order.date.startsWith(monthStr)) {
+                        monthlyIncome += order.total;
+                        
+                        // 今日订单
+                        if (order.date === todayStr) {
+                            dailyIncome += order.total;
+                        }
+                    }
+                }
+            });
+            
+            // 更新显示
+            document.getElementById('daily-income').textContent = `¥${dailyIncome.toFixed(2)}`;
+            document.getElementById('monthly-income').textContent = `¥${monthlyIncome.toFixed(2)}`;
+            document.getElementById('total-income').textContent = `¥${totalIncome.toFixed(2)}`;
+        }
+
+        // 渲染用户购买统计
+        function renderUserPurchaseStats() {
+            const statsEl = document.getElementById('user-purchase-stats');
+            
+            statsEl.innerHTML = users.map(user => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 text-sm">${user.name}</td>
+                    <td class="py-3 text-sm font-medium text-primary">¥${user.totalPurchase.toFixed(2)}</td>
+                    <td class="py-3 text-sm">${user.orderCount}</td>
+                    <td class="py-3 text-sm text-gray-600">${user.lastPurchaseTime}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 渲染所有订单
+        function renderAllOrders() {
+            const ordersEl = document.getElementById('all-orders-list');
+            
+            ordersEl.innerHTML = orders.map(order => {
+                const statusColor = order.statusColor === 'success' ? 'text-success' : 'text-danger';
+                
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 text-sm">${order.orderNumber}</td>
+                        <td class="py-3 text-sm">${order.user}</td>
+                        <td class="py-3 text-sm font-medium text-primary">¥${order.total.toFixed(2)}</td>
+                        <td class="py-3 text-sm ${statusColor}">${order.status}</td>
+                        <td class="py-3 text-sm text-gray-600">${order.pickupCode || '-'}</td>
+                        <td class="py-3 text-sm text-gray-600">${order.date} ${order.time}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 渲染取件码管理
+        function renderPickupCodes() {
+            const pickupCodesEl = document.getElementById('pickup-codes-list');
+            
+            if (pickupCodes.length === 0) {
+                pickupCodesEl.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-gray-500">
+                            <i class="fa fa-box text-4xl mb-3"></i>
+                            <p>暂无取件码记录</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            pickupCodesEl.innerHTML = pickupCodes.map(pickup => {
+                const statusColor = pickup.status === '已提取' ? 'text-success' : 'text-warning';
+                
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 text-sm">${pickup.orderNumber}</td>
+                        <td class="py-3 text-sm font-bold text-primary">${pickup.pickupCode}</td>
+                        <td class="py-3 text-sm text-gray-600">${pickup.pickupTime}</td>
+                        <td class="py-3 text-sm ${statusColor}">${pickup.status}</td>
+                        <td class="py-3 text-sm">
+                            <button onclick="updatePickupStatus(${pickup.id})" class="text-primary hover:text-primary/80 transition-colors">
+                                ${pickup.status === '已提取' ? '已完成' : '标记为已提取'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 更新取件状态
+        function updatePickupStatus(pickupId) {
+            const pickup = pickupCodes.find(p => p.id === pickupId);
+            if (pickup) {
+                pickup.status = pickup.status === '已提取' ? '待提取' : '已提取';
+                renderPickupCodes();
+            }
+        }
+
+        // 签到功能
+        function signIn() {
+            const signinBtn = document.getElementById('signin-btn');
+            if (signinBtn.textContent === '已签到') {
+                return;
+            }
+            
+            signinBtn.textContent = '已签到';
+            signinBtn.disabled = true;
+            signinBtn.classList.add('bg-gray-400');
+            signinBtn.classList.remove('bg-primary', 'hover:bg-primary/90');
+            
+            // 更新连续签到天数
+            const consecutiveDays = document.getElementById('consecutive-days');
+            const newConsecutiveDays = parseInt(consecutiveDays.textContent) + 1;
+            consecutiveDays.textContent = newConsecutiveDays;
+            
+            // 根据连续签到天数计算获得的积分
+            let pointsEarned = 10;
+            if (newConsecutiveDays >= 7) {
+                pointsEarned = 20;
+            } else if (newConsecutiveDays >= 3) {
+                pointsEarned = 15;
+            }
+            
+            // 更新用户积分
+            const userPointsElement = document.getElementById('user-points');
+            let userPoints = parseInt(userPointsElement.textContent.replace(',', ''));
+            userPoints += pointsEarned;
+            userPointsElement.textContent = userPoints.toLocaleString();
+            
+            // 添加积分记录
+            pointsHistory.unshift({
+                id: pointsHistory.length + 1,
+                date: new Date().toISOString().split('T')[0],
+                description: `每日签到获得积分`,
+                points: pointsEarned,
+                type: "earn",
+                balance: userPoints
+            });
+            
+            // 提示
+            alert(`签到成功！获得${pointsEarned}积分`);
+            
+            // 更新积分记录显示
+            renderPointsHistory();
+        }
+
+        // 更新签到日期和明日限定预告日期
+        function updateSigninDate() {
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+            document.getElementById('signin-date').textContent = dateStr;
+            
+            // 更新明日日期
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = `${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日`;
+            document.getElementById('tomorrow-date').textContent = tomorrowStr;
+        }
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.fixed.inset-0').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    this.classList.remove('flex');
+                }
+            });
+        });
+
+        // 平滑滚动
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // 页面可见性变化时的处理
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // 页面不可见时的处理
+            } else {
+                // 页面可见时的处理
+                updateSigninDate();
+            }
+        });
+    </script>
+
+
+</body></html>
